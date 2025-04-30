@@ -1,6 +1,7 @@
 package app.main;
 
 import app.io.CSVReader;
+import app.io.FilterTesting;
 import app.io.SampleDupPrint;
 import app.misc.StopWatch;
 import app.model.Dup;
@@ -21,10 +22,11 @@ public class Main {
         StopWatch.start();
 
         //LinkedList<Notebook> notebooks = fr.read(Notebook.class);
-        //LinkedList<Dup> dup = frSolution.read(Dup.class);
+        LinkedList<Dup> dup = frSolution.read(Dup.class);
 
+        FilterTesting.evaluateF1(dup, dup);
 
-        SampleDupPrint.showSamples(10,100);
+        SampleDupPrint.showSamples(50,150);
 
         StopWatch.stop();
     }
