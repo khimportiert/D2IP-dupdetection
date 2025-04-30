@@ -5,14 +5,12 @@ import app.model.Dup;
 import app.model.Notebook;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 import java.util.*;
 
 public class FilterTesting {
-    public static LinkedList<Dup> findDups(LinkedList<Notebook> notebooks)
+    public static ArrayList<Dup> findDups(List<Notebook> notebooks)
     {
-        LinkedList<Dup> foundDups = new LinkedList<>();
+        ArrayList<Dup> foundDups = new ArrayList<>();
 
         int n = notebooks.size();
 
@@ -46,12 +44,12 @@ public class FilterTesting {
         return foundDups;
     }
 
-    public static double evaluateF1(LinkedList<Dup> trueDups, LinkedList<Dup> declaredDups)
+    public static double evaluateF1(List<Dup> trueDups, List<Dup> declaredDups)
     {
         double [] counts =new double[3];
         int i = 0;
 
-        LinkedList<Dup> allDupsList = new LinkedList<>();
+        ArrayList<Dup> allDupsList = new ArrayList<>();
 
         allDupsList.addAll(trueDups);
         allDupsList.addAll(declaredDups);

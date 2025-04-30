@@ -34,7 +34,9 @@ public class SampleGenerator {
 
         Comparator<Dup> invertedComparator = (d1, d2) -> Integer.compare(d1.getRid(), d2.getId());
 
-        Queue<Notebook> notebooks = readerData.read(Notebook.class);
+        ArrayList<Notebook> notebooksList = readerData.read(Notebook.class);
+        Queue<Notebook> notebooks = new LinkedList<>(notebooksList);
+
         TreeSet<Dup> duplicates = new TreeSet<>(readerDup.read(Dup.class));
         TreeSet<Dup> duplicatesInv = new TreeSet<>(invertedComparator);
         duplicatesInv.addAll(readerDup.read(Dup.class));
@@ -44,7 +46,7 @@ public class SampleGenerator {
             System.exit(1);
         }
 
-        LinkedList<ModelEntity> notebookOut = new LinkedList<>();
+        ArrayList<ModelEntity> notebookOut = new ArrayList<>();
         for (int i = 0; i < sampleSize; i++) {
             notebookOut.add(notebooks.poll());
         }
@@ -69,7 +71,7 @@ public class SampleGenerator {
             }
         }
 
-        LinkedList<ModelEntity> duplicateOutList = new LinkedList<>(duplicateOut);
+        ArrayList<ModelEntity> duplicateOutList = new ArrayList<>(duplicateOut);
 
         CSVGenerator dataGen = new CSVGenerator(outputDataFileName);
         CSVGenerator dupGen = new CSVGenerator(outputDupFileName);

@@ -4,7 +4,7 @@ import app.model.Dup;
 import app.model.Notebook;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class SampleDupPrint {
     //public static void main(String[] args) {}
@@ -15,8 +15,8 @@ public class SampleDupPrint {
         CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
         CSVReader frSolution = new CSVReader(new File(currentDir + "/data/ZY1.csv").getAbsolutePath());
 
-        LinkedList<Notebook> notebookList = fr.read(Notebook.class);
-        LinkedList<Dup> dupList = frSolution.read(Dup.class);
+        ArrayList<Notebook> notebookList = fr.read(Notebook.class);
+        ArrayList<Dup> dupList = frSolution.read(Dup.class);
 
         for(int i = 0; i < amount; i++)
         {

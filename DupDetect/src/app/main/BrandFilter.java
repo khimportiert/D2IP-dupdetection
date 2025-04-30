@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class BrandFilter {
     public static void main(String[] args) throws IOException {
@@ -19,8 +19,8 @@ public class BrandFilter {
         CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
         CSVReader bfr = new CSVReader(new File(currentDir + "/data/brands.txt").getAbsolutePath());
 
-        LinkedList<Notebook> notebooks = fr.read(Notebook.class);
-        LinkedList<Brand> brands = bfr.read(Brand.class);
+        ArrayList<Notebook> notebooks = fr.read(Notebook.class);
+        ArrayList<Brand> brands = bfr.read(Brand.class);
 
         HashSet<String> brandsLists = new HashSet<>();
 

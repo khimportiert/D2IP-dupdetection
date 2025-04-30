@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class CSVReader {
     private String fileName;
@@ -34,10 +34,10 @@ public class CSVReader {
      *
      * @param <T>        The type of the entity.
      * @param entityType The class object of the entity type. Its attributes must match the CSV columns.
-     * @return           A {@code LinkedList} containing objects of the specified entity type.
+     * @return           A {@code ArrayList} containing objects of the specified entity type.
      */
-    public <T> LinkedList<T> read(Class<T> entityType) {
-        LinkedList<T> items = new LinkedList<>();
+    public <T> ArrayList<T> read(Class<T> entityType) {
+        ArrayList<T> items = new ArrayList<>();
 
         if (fileName == null) {
             System.err.println("No file specified");
