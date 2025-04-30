@@ -67,8 +67,7 @@ public class CSVReader {
         }
 
         catch (IOException e) {
-            String currentDir = System.getProperty("user.dir");
-            System.err.println("Error reading file: " + currentDir + fileName);
+            System.err.println("Error reading file: " + fileName);
             System.exit(1);
         }
 
