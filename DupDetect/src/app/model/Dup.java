@@ -18,12 +18,9 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
         return Integer.parseInt(rid);
     }
 
-    public void setLid(int id) {
-        lid = ""+id;
-    }
-
-    public void setRid(int id) {
-        rid = ""+id;
+    public void setIds(int id1, int id2) {
+        lid = ""+Integer.min(id1,id2);
+        rid = ""+Integer.max(id1,id2);
     }
 
     @Override

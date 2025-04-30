@@ -10,6 +10,18 @@ import java.util.Set;
 public class FilterTesting {
     public static Dup findDups(LinkedList<Notebook> notebooks)
     {
+        int n = notebooks.size();
+        for (int i = 0; i < n; i++)
+        {
+            for(int j = 0; j < i; j++)
+            {
+                String notebookI = notebooks.get(i).getTitle();
+                String notebookJ = notebooks.get(j).getTitle();
+
+
+            }
+        }
+
         return null;
     }
 
@@ -18,25 +30,34 @@ public class FilterTesting {
         double tp = 0; // in both
         double fp = 0; // in declaredDups not in trueDups
         double fn = 0; // in trueDups not in declaredDups
+        int i = 0;
 
-        LinkedList<Dup> wrongDups = new LinkedList<>();
-        for(Dup d : trueDups)
+        LinkedList<Dup> allDupsList = new LinkedList<>();
+
+        allDupsList.addAll(trueDups);
+        allDupsList.addAll(declaredDups);
+
+        HashSet<Dup> allDups = new HashSet<>(allDupsList);
+
+        for(Dup d : allDups)
         {
-            Dup newDup = new Dup();
-            newDup.setRid(d.getLid());
-            newDup.setLid(d.getRid());
-            wrongDups.add(newDup);
+            boolean trueDupe = trueDups.contains(d);
+            boolean declaredDupe = declaredDups.contains(d);
+
+            if(declaredDupe)
+            {
+                if(trueDupe)
+                {
+                    tp++;
+                }
+                else
+                {
+                    fp++;
+                }
+            } else if (trueDupe) {
+                fn++;
+            }
         }
-        System.out.println("wrongDups old: " + wrongDups.size());
-
-        LinkedList<Dup> safe = trueDups;
-        trueDups.addAll(wrongDups);
-
-        System.out.println("trueDups original length: " + trueDups.size());
-        HashSet<Dup> allDups = new HashSet<>(trueDups);
-
-        System.out.println("trueDups length: " + trueDups.size());
-        System.out.println("allDups length: " + allDups.size());
 
         double precision = tp / (tp + fp);
         double recall = tp / (tp + fn);
