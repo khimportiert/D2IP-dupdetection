@@ -5,6 +5,7 @@ import app.misc.StopWatch;
 import app.model.Notebook;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Main {
@@ -16,7 +17,7 @@ public class Main {
 
         StopWatch.start();
 
-        List<Notebook> notebooks = fr.read(Notebook.class);
+        LinkedList<Notebook> notebooks = fr.read(Notebook.class);
         System.out.println(notebooks.getFirst());
 
         StopWatch.stop();

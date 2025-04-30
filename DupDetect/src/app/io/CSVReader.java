@@ -38,7 +38,7 @@ public class CSVReader {
      * @param entityType The class object of the entity type. Its attributes must match the CSV columns.
      * @return           A {@code LinkedList} containing objects of the specified entity type.
      */
-    public <T> List<T> read(Class<T> entityType) {
+    public <T> LinkedList<T> read(Class<T> entityType) {
         LinkedList<T> items = new LinkedList<>();
 
         if (fileName == null) {
@@ -67,7 +67,7 @@ public class CSVReader {
         }
 
         catch (IOException e) {
-            System.err.println("Error reading file: " + fileName);
+            System.err.println(e);
             System.exit(1);
         }
 
