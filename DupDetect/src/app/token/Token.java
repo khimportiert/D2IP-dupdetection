@@ -3,20 +3,23 @@ package app.token;
 public class Token {
     public enum Type {
         GB,
+        PROCESSOR,
+        SHORT,
         WORD,
+        KEYWORD,
         OTHER
     }
 
-    private String token;
+    private String value;
     private Type type;
 
-    public Token(String token, Type type) {
-        this.token = token;
+    public Token(String value, Type type) {
+        this.value = value;
         this.type = type;
     }
 
-    public String getToken() {
-        return token;
+    public String getValue() {
+        return value;
     }
 
     public Type getType() {

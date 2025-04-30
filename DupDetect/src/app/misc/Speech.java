@@ -28,6 +28,10 @@ public class Speech {
     }
 
     public static boolean looksLikeSpeech(String str) {
+        if (str.length() < 3 || str.matches(".*\\d.*")) {
+            return false;
+        }
+
         String upper = str.toUpperCase();
         int letterCount = 0;
         for (char c : upper.toCharArray()) {

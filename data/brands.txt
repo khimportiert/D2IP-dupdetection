@@ -20,3 +20,4 @@ acer
 galaxy 
 chromebook 
 samsung
+vology
