@@ -23,8 +23,14 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
     }
 
     public void setRid(int id) {
-        lid = ""+id;
+        rid = ""+id;
     }
+
+    @Override
+    public int hashCode() {
+        return this.getLid() + this.getRid();
+    }
+
 
     @Override
     public boolean equals(Object o) {
