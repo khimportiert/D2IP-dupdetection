@@ -11,7 +11,7 @@ package app.model;
  * </ul>
  * Additional fields beyond those in the CSV are allowed.
  */
-public class Notebook implements ModelEntity {
+public class Notebook implements ModelEntity, Comparable<ModelEntity> {
     private String id;
     private String title;
 
@@ -36,5 +36,18 @@ public class Notebook implements ModelEntity {
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 '}';
+    }
+
+    public String toCSV() {
+        return id + "," + title;
+    }
+
+    public String[] getFields() {
+        return new String[] { "id", "title" };
+    }
+
+    @Override
+    public int compareTo(ModelEntity other) {
+        return Integer.compare(this.getId(), other.getId());
     }
 }
