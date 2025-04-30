@@ -1,5 +1,7 @@
 package app.model;
 
+import java.util.Objects;
+
 public class Dup implements ModelEntity, Comparable<ModelEntity> {
     private String lid;
     private String rid;
@@ -25,7 +27,7 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
 
     @Override
     public int hashCode() {
-        return this.getLid() + this.getRid();
+        return Objects.hash(this.lid, this.rid);
     }
 
 

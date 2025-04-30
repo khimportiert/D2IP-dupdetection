@@ -27,9 +27,7 @@ public class FilterTesting {
 
     public static double evaluateF1(LinkedList<Dup> trueDups, LinkedList<Dup> declaredDups)
     {
-        double tp = 0; // in both
-        double fp = 0; // in declaredDups not in trueDups
-        double fn = 0; // in trueDups not in declaredDups
+        double [] counts =new double[3];
         int i = 0;
 
         LinkedList<Dup> allDupsList = new LinkedList<>();
@@ -39,28 +37,28 @@ public class FilterTesting {
 
         HashSet<Dup> allDups = new HashSet<>(allDupsList);
 
-        for(Dup d : allDups)
-        {
+        allDups.parallelStream().forEach(d -> {
             boolean trueDupe = trueDups.contains(d);
             boolean declaredDupe = declaredDups.contains(d);
 
+            synchronized (counts) {
             if(declaredDupe)
             {
                 if(trueDupe)
                 {
-                    tp++;
+                    counts[0]++;
                 }
                 else
                 {
-                    fp++;
+                    counts[1]++;
                 }
             } else if (trueDupe) {
-                fn++;
-            }
-        }
+                counts[2]++;
+            }}
+        });
 
-        double precision = tp / (tp + fp);
-        double recall = tp / (tp + fn);
+        double precision =  counts[0] / ( counts[0] +  counts[1]);
+        double recall =  counts[0] / ( counts[0] +  counts[2]);
 
         double f1 = (2 * precision * recall)/(precision + recall);
 
