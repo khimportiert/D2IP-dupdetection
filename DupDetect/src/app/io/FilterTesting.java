@@ -57,10 +57,10 @@ public class FilterTesting {
             }}
         });
 
-        double precision =  counts[0] / ( counts[0] +  counts[1]);
+        double precisioon =  counts[0] / ( counts[0] +  counts[1]);
         double recall =  counts[0] / ( counts[0] +  counts[2]);
 
-        double f1 = (2 * precision * recall)/(precision + recall);
+        double f1 = (2 * precisioon * recall)/(precisioon + recall);
 
         return f1;
     }
