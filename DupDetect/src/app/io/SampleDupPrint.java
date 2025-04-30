@@ -27,8 +27,6 @@ public class SampleDupPrint {
             System.out.println(notebookList.get(dup.getRid()));
             System.out.println();
         }
-
-
     }
 
 
