@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class CSVReader {
     private String fileName;
@@ -46,12 +44,13 @@ public class CSVReader {
             System.exit(1);
         }
 
+        String line = "";
+
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
             String[] headers = null;
 
             if ((line = br.readLine()) != null) {
-                headers = line.split(delimiter);
+                headers = line.split(delimiter, -1);
             }
 
             if (headers == null) {
@@ -60,9 +59,15 @@ public class CSVReader {
             }
 
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(delimiter);
-                T entity = createEntity(entityType, headers, values);
-                items.add(entity);
+                String[] values = line.split(delimiter, -1);
+                try {
+                    T entity = createEntity(entityType, headers, values);
+                    items.add(entity);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    // TODO Handle this
+//                    System.err.println("Error parsing entity: " + e);
+//                    System.err.println("At: " + line);
+                }
             }
         }
 
@@ -74,6 +79,7 @@ public class CSVReader {
         catch (Exception e) {
             System.err.println("Error parsing entity: " + e);
             System.err.println("Do the fields match the .csv header?");
+            e.printStackTrace();
             System.exit(1);
         }
 
