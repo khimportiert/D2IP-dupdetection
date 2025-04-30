@@ -28,7 +28,7 @@ public class SampleGenerator {
         this.outputDupFileName = outputDupFileName;
     }
 
-    public void createNotebookSample(int sampleSize) {
+    public void generateNotebookSample(int sampleSize) {
         CSVReader readerData = new CSVReader(dataFileName);
         CSVReader readerDup = new CSVReader(dupFileName);
 
@@ -70,7 +70,6 @@ public class SampleGenerator {
         }
 
         LinkedList<ModelEntity> duplicateOutList = new LinkedList<>(duplicateOut);
-        System.out.println(duplicateOutList.size());
 
         CSVGenerator dataGen = new CSVGenerator(outputDataFileName);
         CSVGenerator dupGen = new CSVGenerator(outputDupFileName);
