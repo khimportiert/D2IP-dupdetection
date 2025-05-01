@@ -11,6 +11,8 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
         this.rid = Integer.toString(Integer.max(id1,id2));
     }
 
+    public Dup() {}
+
     public int getId() {
         return getLid();
     }
