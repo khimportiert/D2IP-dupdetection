@@ -6,7 +6,10 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
     private String lid;
     private String rid;
 
-    public Dup() { }
+    public Dup(int id1, int id2) {
+        this.lid = Integer.toString(Integer.min(id1,id2));
+        this.rid = Integer.toString(Integer.max(id1,id2));
+    }
 
     public int getId() {
         return getLid();

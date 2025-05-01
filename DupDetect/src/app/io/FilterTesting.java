@@ -30,8 +30,7 @@ public class FilterTesting {
 
                 if (notebookI.equals(notebookJ))
                 {
-                    Dup newDup = new Dup();
-                    newDup.setIds(i,j);
+                    Dup newDup = new Dup(i,j);
                     foundDups.add(newDup);
                 }
             }
