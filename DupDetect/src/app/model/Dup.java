@@ -82,4 +82,9 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
     public TreeSet<Token> getTokens() {
         return null;
     }
+
+    @Override
+    public void tokenize() {
+        throw new RuntimeException("Tried tokenize a Dup?");
+    }
 }

@@ -59,7 +59,7 @@ public class CSVReader {
             }
 
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(delimiter, -1);
+                String[] values = line.split(delimiter, headers.length);
                 try {
                     T entity = createEntity(entityType, headers, values);
                     items.add(entity);

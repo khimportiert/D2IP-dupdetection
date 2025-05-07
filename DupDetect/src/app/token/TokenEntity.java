@@ -1,5 +1,6 @@
 package app.token;
 
+import app.model.ModelEntity;
 import app.model.Notebook;
 import app.model.StorageDevice;
 
@@ -9,7 +10,7 @@ public class TokenEntity implements Comparable<TokenEntity> {
     private int id;
     private Set<Token> tokens = new HashSet<>();
 
-    public TokenEntity(StorageDevice notebook) {
+    public TokenEntity(ModelEntity notebook) {
         this.id = notebook.getId();
 
         notebook.tokenize();
@@ -19,7 +20,7 @@ public class TokenEntity implements Comparable<TokenEntity> {
 //        tokens.addAll(tokenMap.get(Token.Type.SPEC));
 //        tokens.addAll(tokenMap.get(Token.Type.SHORT));
 //        tokens.addAll(tokenMap.get(Token.Type.SELLER));
-//        tokens.addAll(tokenMap.get(Token.Type.OTHER));
+        tokens.addAll(tokenMap.get(Token.Type.OTHER));
     }
 
     public int getId() {

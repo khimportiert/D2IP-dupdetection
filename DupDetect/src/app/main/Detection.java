@@ -20,9 +20,9 @@ import java.util.TreeSet;
 public class Detection {
     public static void main(String[] args) {
         String currentDir = System.getProperty("user.dir");
-        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z2.csv").getAbsolutePath());
+        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
 
-        ArrayList<StorageDevice> notebooks = fr.read(StorageDevice.class);
+        ArrayList<Notebook> notebooks = fr.read(Notebook.class);
 
         TreeSet<TokenEntity> tokenEntities = new TreeSet<>();
         ArrayList<Dup> duplicates = new ArrayList<>();
@@ -34,7 +34,7 @@ public class Detection {
             TokenEntity tokenEntity = new TokenEntity(notebooks.get(i));
 
             // THROW OUT IF IT HAS TOO FEW TOKENS i.e. Notebook{id='30730', title='"Lenovo Laptop'}
-            if (tokenEntity.getTokens().size() < 2) {
+            if (tokenEntity.getTokens().size() < 3) {
                 continue;
             }
 

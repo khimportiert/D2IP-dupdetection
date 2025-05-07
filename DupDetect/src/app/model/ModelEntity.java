@@ -12,4 +12,6 @@ public interface ModelEntity {
     String getTitle();
 
     TreeSet<Token> getTokens();
+
+    void tokenize();
 }
