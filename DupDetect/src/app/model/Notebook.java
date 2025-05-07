@@ -1,16 +1,8 @@
 package app.model;
 
-import app.io.DictionaryTree;
-import app.misc.Speech;
 import app.token.Token;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import app.token.Tokenizer;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Represents a notebook entity that can be loaded from a CSV file.
@@ -26,7 +18,7 @@ import java.util.regex.Pattern;
 public class Notebook implements ModelEntity, Comparable<ModelEntity> {
     private String id;
     private String title;
-    private ArrayList<Token> tokens = new ArrayList<>();
+    private TreeSet<Token> tokens = new TreeSet<>();
 
     public Notebook() {}
 
@@ -35,11 +27,11 @@ public class Notebook implements ModelEntity, Comparable<ModelEntity> {
         this.title = title;
     }
 
-    public ArrayList<Token> getTokens() {
+    public TreeSet<Token> getTokens() {
         return tokens;
     }
 
-    public void setTokens(ArrayList<Token> tokens) {
+    public void setTokens(TreeSet<Token> tokens) {
         this.tokens = tokens;
     }
 
@@ -52,34 +44,7 @@ public class Notebook implements ModelEntity, Comparable<ModelEntity> {
     }
 
     public void tokenize() {
-        String str = title.toLowerCase().replaceAll("[\"()?\\s+]", " ").trim();
-        Pattern pattern = Pattern.compile("i[3579][- ]\\d{4,5}[a-z]*");
-        Matcher matcher = pattern.matcher(str);
-        if (matcher.find()) {
-            String processor = matcher.group(0);
-            tokens.add(new Token(processor, Token.Type.PROCESSOR));
-            str = str.replaceAll(pattern.toString(), "");
-        }
-        for (String s : str.split(" ")) {
-            if (s.equals("|"))
-                continue;
-
-            if (s.endsWith("gb")) {
-                tokens.add(new Token(s, Token.Type.GB));
-            }
-            else if (s.length() < 3) {
-                tokens.add(new Token(s, Token.Type.SHORT));
-            }
-            else if (Speech.looksLikeSpeech(s)) {
-                if (DictionaryTree.tree.contains(s))
-                    tokens.add(new Token(s, Token.Type.WORD));
-                else
-                    tokens.add(new Token(s, Token.Type.KEYWORD));
-            }
-            else {
-                tokens.add(new Token(s, Token.Type.OTHER));
-            }
-        }
+        tokens = Tokenizer.tokenizeStorageDevice(this);
     }
 
     @Override

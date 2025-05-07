@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class DictionaryTree {
-    public static TreeSet<String> tree = new TreeSet<>();
+    public static TreeSet<String> tree;
 
     static {
         ArrayList<String> words = new ArrayList<>();

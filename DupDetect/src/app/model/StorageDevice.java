@@ -1,5 +1,10 @@
 package app.model;
 
+import app.token.Token;
+import app.token.Tokenizer;
+
+import java.util.TreeSet;
+
 /**
  * Represents a notebook entity that can be loaded from a CSV file.
  * <p>
@@ -11,19 +16,33 @@ package app.model;
  * </ul>
  * Additional fields beyond those in the CSV are allowed.
  */
-public class StorageDevice implements ModelEntity {
-    private String id;
+public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
+    private int id;
     private String name;
     private String price;
     private String brand;
     private String description;
     private String category;
+    private TreeSet<Token> tokens = new TreeSet<>();
+
+    public TreeSet<Token> getTokens() {
+        return tokens;
+    }
+
+    public void tokenize() {
+        tokens = Tokenizer.tokenizeStorageDevice(this);
+    }
 
     public StorageDevice() { }
 
     @Override
+    public String toString() {
+        return name;
+    }
+
+    @Override
     public int getId() {
-        return Integer.parseInt(id);
+        return id;
     }
 
     @Override
@@ -39,5 +58,10 @@ public class StorageDevice implements ModelEntity {
     @Override
     public int compareTo(ModelEntity b) {
         return Integer.compare(this.getId(), b.getId());
+    }
+
+    @Override
+    public String getTitle() {
+        return name;
     }
 }

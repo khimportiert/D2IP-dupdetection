@@ -1,6 +1,9 @@
 package app.model;
 
+import app.token.Token;
+
 import java.util.Objects;
+import java.util.TreeSet;
 
 public class Dup implements ModelEntity, Comparable<ModelEntity> {
     private String lid;
@@ -35,7 +38,6 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
         return Objects.hash(this.lid, this.rid);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if(o instanceof Dup other) {
@@ -63,6 +65,21 @@ public class Dup implements ModelEntity, Comparable<ModelEntity> {
 
     @Override
     public int compareTo(ModelEntity other) {
-        return Integer.compare(this.getLid(), other.getId());
+        if (other instanceof Dup otherDup) {
+            if (this.getLid() == other.getId()) {
+                return Integer.compare(this.getRid(), otherDup.getRid());
+            }
+        }
+        return Integer.compare(this.getId(), other.getId());
+    }
+
+    @Override
+    public String getTitle() {
+        return lid;
+    }
+
+    @Override
+    public TreeSet<Token> getTokens() {
+        return null;
     }
 }

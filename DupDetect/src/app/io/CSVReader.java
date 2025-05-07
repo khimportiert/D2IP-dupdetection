@@ -67,6 +67,8 @@ public class CSVReader {
                     // TODO Handle this
 //                    System.err.println("Error parsing entity: " + e);
 //                    System.err.println("At: " + line);
+                } catch (NumberFormatException e) {
+                    // TODO
                 }
             }
         }
@@ -86,7 +88,7 @@ public class CSVReader {
         return items;
     }
 
-    private <T> T createEntity(Class<T> entityType, String[] headers, String[] values) throws Exception {
+    private <T> T createEntity(Class<T> entityType, String[] headers, String[] values) throws NumberFormatException, Exception {
         T instance = entityType.getDeclaredConstructor().newInstance();
 
         for (int i = 0; i < headers.length; i++) {
@@ -95,7 +97,18 @@ public class CSVReader {
 
             Field field = entityType.getDeclaredField(fieldName);
             field.setAccessible(true);
-            field.set(instance, value);
+
+//            System.out.println(field.getType());
+
+            if (field.getType() == int.class) {
+                try {
+                    field.set(instance, Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    throw new NumberFormatException();
+                }
+            } else {
+                field.set(instance, value);
+            }
         }
 
         return instance;
