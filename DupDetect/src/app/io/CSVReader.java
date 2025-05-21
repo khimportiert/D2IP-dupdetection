@@ -5,10 +5,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CSVReader {
     private String fileName;
-    private final String delimiter = ",";
 
     /**
      * Provides functionality to read a .csv file
@@ -50,7 +50,7 @@ public class CSVReader {
             String[] headers = null;
 
             if ((line = br.readLine()) != null) {
-                headers = line.split(delimiter, -1);
+                headers = line.split(",", -1);
             }
 
             if (headers == null) {
@@ -59,7 +59,22 @@ public class CSVReader {
             }
 
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(delimiter, headers.length);
+                String[] values = new String[headers.length];
+                Arrays.fill(values, "");
+                int i = 0;
+                boolean inQuotes = false;
+                for (Character c : line.toCharArray()) {
+                    if (c.equals('"')) {
+                        inQuotes = !inQuotes;
+                    }
+                    if (c.equals(',') && !inQuotes) {
+                        i++;
+                    }
+                    else {
+                        values[i] += c.toString();
+                    }
+                }
+//                line.split(delimiter, headers.length);
                 try {
                     T entity = createEntity(entityType, headers, values);
                     items.add(entity);
@@ -67,6 +82,8 @@ public class CSVReader {
                     // TODO Handle this
 //                    System.err.println("Error parsing entity: " + e);
 //                    System.err.println("At: " + line);
+                    // TODO: Eine Zeile ohne gültige ID o.Ä. Damit die Indexe sich nicht verschieben:
+                    items.add(entityType.getDeclaredConstructor().newInstance());
                 } catch (NumberFormatException e) {
                     // TODO
                 }
@@ -88,7 +105,7 @@ public class CSVReader {
         return items;
     }
 
-    private <T> T createEntity(Class<T> entityType, String[] headers, String[] values) throws NumberFormatException, Exception {
+    private <T> T createEntity(Class<T> entityType, String[] headers, String[] values) throws Exception {
         T instance = entityType.getDeclaredConstructor().newInstance();
 
         for (int i = 0; i < headers.length; i++) {
@@ -97,8 +114,6 @@ public class CSVReader {
 
             Field field = entityType.getDeclaredField(fieldName);
             field.setAccessible(true);
-
-//            System.out.println(field.getType());
 
             if (field.getType() == int.class) {
                 try {

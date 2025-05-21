@@ -25,6 +25,26 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
     private String category;
     private TreeSet<Token> tokens = new TreeSet<>();
 
+    public String getName() {
+        return name;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
     public TreeSet<Token> getTokens() {
         return tokens;
     }
@@ -34,11 +54,6 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
     }
 
     public StorageDevice() { }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 
     @Override
     public int getId() {
@@ -63,5 +78,17 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
     @Override
     public String getTitle() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return "StorageDevice{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price='" + price + '\'' +
+                ", brand='" + brand + '\'' +
+                ", description='" + description + '\'' +
+                ", category='" + category +
+                '}';
     }
 }

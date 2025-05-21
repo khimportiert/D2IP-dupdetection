@@ -84,13 +84,13 @@ public class Tokenizer {
         return sb.toString().trim();
     }
 
-    public static void writeFileTest(List<Notebook> items) {
+    public static void writeFileTest(List<ModelEntity> items) {
 
         try (FileWriter writer = new FileWriter(filename)) {
 
             boolean even = false;
 
-            for (Notebook item : items) {
+            for (ModelEntity item : items) {
                 HashMap<Token.Type, HashSet<Token>> groupedTokens = getGroupedTokens(item);
 
                 StringBuilder str = new StringBuilder();

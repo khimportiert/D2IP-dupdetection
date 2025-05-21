@@ -29,44 +29,56 @@ public class SampleGenerator {
     }
 
     public void generateNotebookSample(int sampleSize) {
+        generate(sampleSize, Notebook.class);
+    }
+
+    public <T> void generate(int sampleSize, Class<T> entityType) {
         CSVReader readerData = new CSVReader(dataFileName);
         CSVReader readerDup = new CSVReader(dupFileName);
 
         Comparator<Dup> invertedComparator = (d1, d2) -> Integer.compare(d1.getRid(), d2.getId());
 
-        ArrayList<Notebook> notebooksList = readerData.read(Notebook.class);
-        Queue<Notebook> notebooks = new LinkedList<>(notebooksList);
+        ArrayList<T> entityList = readerData.read(entityType);
+        Queue<T> entitiyQueue = new LinkedList<>(entityList);
 
         TreeSet<Dup> duplicates = new TreeSet<>(readerDup.read(Dup.class));
         TreeSet<Dup> duplicatesInv = new TreeSet<>(invertedComparator);
         duplicatesInv.addAll(readerDup.read(Dup.class));
 
-        if (sampleSize <= 1 || sampleSize > notebooks.size()) {
+        if (sampleSize <= 1 || sampleSize > entitiyQueue.size()) {
             System.err.println("Invalid sample size");
             System.exit(1);
         }
 
-        ArrayList<ModelEntity> notebookOut = new ArrayList<>();
+        ArrayList<T> entityOut = new ArrayList<>();
         for (int i = 0; i < sampleSize; i++) {
-            notebookOut.add(notebooks.poll());
+            entityOut.add(entitiyQueue.poll());
         }
 
+        int i = 0;
         HashSet<ModelEntity> duplicateOut = new HashSet<>();
-        for (ModelEntity item : notebookOut) {
-            for (Dup dup : duplicates) {
-                if (dup.getLid() > item.getId())
-                    break;
-                else {
-                    if (dup.getLid() == item.getId() && dup.getRid() <= sampleSize)
-                        duplicateOut.add(dup);
+        for (T _item : entityOut) {
+            if (_item instanceof ModelEntity item) {
+                for (Dup dup : duplicates) {
+                    if (dup.getLid() > item.getId())
+                        break;
+                    else {
+                        if (dup.getLid() == item.getId() && dup.getRid() <= sampleSize)
+                            duplicateOut.add(dup);
+                    }
                 }
-            }
-            for (Dup dup : duplicatesInv) {
-                if (dup.getRid() > item.getId())
-                    break;
-                else {
-                    if (dup.getRid() == item.getId() && dup.getLid() <= sampleSize)
-                        duplicateOut.add(dup);
+                for (Dup dup : duplicatesInv) {
+                    if (dup.getRid() > item.getId())
+                        break;
+                    else {
+                        if (dup.getRid() == item.getId() && dup.getLid() <= sampleSize)
+                            duplicateOut.add(dup);
+                    }
+                }
+
+                i++;
+                if (i % 5000 == 0) {
+                    System.out.println(i + " / " + sampleSize);
                 }
             }
         }
@@ -76,7 +88,7 @@ public class SampleGenerator {
         CSVGenerator dataGen = new CSVGenerator(outputDataFileName);
         CSVGenerator dupGen = new CSVGenerator(outputDupFileName);
 
-        dataGen.generate(notebookOut);
+        dataGen.generate((List<ModelEntity>) entityOut);
         dupGen.generate(duplicateOutList);
     }
 

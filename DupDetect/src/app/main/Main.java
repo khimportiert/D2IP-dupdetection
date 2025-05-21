@@ -1,34 +1,49 @@
 package app.main;
 
+import app.db.MySqlDB;
 import app.io.CSVReader;
-import app.io.FilterTesting;
-import app.io.SampleDupPrint;
-import app.misc.StopWatch;
-import app.model.Dup;
-import app.model.Notebook;
+import app.model.StorageDevice;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 
 public class Main {
+    static final String currentDir = System.getProperty("user.dir");
+    static final String FILE_1 = currentDir + "/data/Z2.csv";
+    static final String FILE_2 = currentDir + "/data/ZY2.csv";
+    static final String OUT_1 = currentDir + "/dataSample/Z2.csv";
+    static final String OUT_2 = currentDir + "/dataSample/ZY2.csv";
+
     public static void main(String[] args) {
         System.out.println("Hello and welcome!");
 
-        String currentDir = System.getProperty("user.dir");
-        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
-        CSVReader frSolution = new CSVReader(new File(currentDir + "/data/ZY1.csv").getAbsolutePath());
-        CSVReader frSolution2 = new CSVReader(new File(currentDir + "/data/ZY2.csv").getAbsolutePath());
+        CSVReader fr = new CSVReader(new File(FILE_1).getAbsolutePath());
+        CSVReader dr = new CSVReader(new File(FILE_2).getAbsolutePath());
 
-        StopWatch.start();
-
-        //LinkedList<Notebook> notebooks = fr.read(Notebook.class);
-        LinkedList<Dup> dups1 = frSolution.read(Dup.class);
-        LinkedList<Dup> dups2 = frSolution.read(Dup.class);
-        System.out.println("f1 score: " + FilterTesting.evaluateF1(dups2, dups2));
+        ArrayList<StorageDevice> storageDevices = fr.read(StorageDevice.class);
 
 
+        MySqlDB.insertStorageDevices(storageDevices);
 
-        StopWatch.stop();
+
+//
+//        SampleGenerator gen = new SampleGenerator(FILE_1, FILE_2, OUT_1, OUT_2);
+//        gen.generate(20_000, StorageDevice.class);
+//
+//        CSVReader or1 = new CSVReader(new File(OUT_1).getAbsolutePath());
+//        CSVReader or2 = new CSVReader(new File(OUT_2).getAbsolutePath());
+//        ArrayList<ModelEntity> bks = new ArrayList<>();
+//        ArrayList<ModelEntity> devices = new ArrayList<>(or1.read(StorageDevice.class));
+//        ArrayList<Dup> dupes = new ArrayList<>(or2.read(Dup.class));
+//
+//        for(Dup dup : dupes) {
+//            bks.add(devices.get(dup.getLid()));
+//            bks.add(devices.get(dup.getRid()));
+//        }
+//
+//        bks.forEach(ModelEntity::tokenize);
+//        Tokenizer.writeFileTest(bks);
     }
+
+
 }

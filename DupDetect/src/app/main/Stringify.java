@@ -13,16 +13,18 @@ public class Stringify {
     public static void main(String[] args) {
 
         String currentDir = System.getProperty("user.dir");
-        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z2.csv").getAbsolutePath());
+        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
 
         StopWatch.start();
 
-        ArrayList<StorageDevice> org = fr.read(StorageDevice.class);
+        ArrayList<Notebook> org = fr.read(Notebook.class);
 
         ArrayList<String> deviceStrings = new ArrayList<>();
 
-        for (StorageDevice device : org) {
-            deviceStrings.add(device.toString().toLowerCase()
+        for (Notebook device : org) {
+            deviceStrings.add(device.getTitle().toLowerCase()
+                    .replaceAll("[^a-z0-9]", " ")
+                    .replaceAll("\\s+", " ")
                     .trim());
         }
 

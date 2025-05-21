@@ -1,6 +1,7 @@
 package app.io;
 
 import app.model.Dup;
+import app.model.ModelEntity;
 import app.model.Notebook;
 
 import java.io.File;
@@ -9,13 +10,17 @@ import java.util.ArrayList;
 public class SampleDupPrint {
     //public static void main(String[] args) {}
 
-    public static void showSamples(int amount, int startingIndex)
-    {
+    public static void showSamples(int amount, int startingIndex) {
         String currentDir = System.getProperty("user.dir");
-        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
-        CSVReader frSolution = new CSVReader(new File(currentDir + "/data/ZY1.csv").getAbsolutePath());
+        showSamples(amount, startingIndex, currentDir + "/data/Z1.csv", currentDir + "/data/ZY1.csv", Notebook.class);
+    }
 
-        ArrayList<Notebook> notebookList = fr.read(Notebook.class);
+    public static <T> void showSamples(int amount, int startingIndex, String file_data, String file_solution, Class<T> entity_class)
+    {
+        CSVReader fr = new CSVReader(new File(file_data).getAbsolutePath());
+        CSVReader frSolution = new CSVReader(new File(file_solution).getAbsolutePath());
+
+        ArrayList<T> notebookList = fr.read(entity_class);
         ArrayList<Dup> dupList = frSolution.read(Dup.class);
 
         for(int i = 0; i < amount; i++)
