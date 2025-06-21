@@ -34,6 +34,8 @@ public class BuildPartition {
                 LOOKUP_TABLE[i] = (byte) (i + 0x20);
             } else if (i >= '0' && i <= '9') {
                 LOOKUP_TABLE[i] = (byte) (i);
+            } else if (i == '.') {
+                LOOKUP_TABLE[i] = (byte) (i);
             } else {
                 LOOKUP_TABLE[i] = ' ';
             }
@@ -123,7 +125,7 @@ public class BuildPartition {
 
         ArrayList<Dup> duplicates = new ArrayList<>();
 
-        for (int i = 3; i < brands.size(); i++) {
+        for (int i = 0; i < brands.size(); i++) {
             for (int j = 0; j < sizes.size(); j++) {
                 HashMap<String, Integer> WORD_COUNT = new HashMap<>();
 
@@ -136,11 +138,18 @@ public class BuildPartition {
                     ));
                     // +++++ Sorting by Word Count ASC +++++
 
+                    boolean isPrinted = false;
                     for (String word : device.getSanitizedName().split(" ")) {
-                        if (word.length() > 3) {
-                            Token token = new Token(word, Token.Type.WORD);
-                            device.getTokens().add(token);
+                        if (word.isEmpty())
+                            continue;
+
+                        if (word.length() < 2 && !isPrinted) {
+                            System.out.println(device.getSanitizedName());
+                            isPrinted = true;
                         }
+
+                        Token token = new Token(word, Token.Type.WORD);
+                        device.getTokens().add(token);
                     }
 
                     // +++++ TF-IDF +++++
@@ -182,6 +191,9 @@ public class BuildPartition {
 
                             String device1 = partitions[finalI][finalJ].get(finalN).getTokens().toString();
                             String device2 = partitions[finalI][finalJ].get(m).getTokens().toString();
+
+//                            System.out.println(device1);
+//                            System.out.println(device2);
 
 //                            double d = distance.apply(device1, device2); // Jaro-Winkler
                             double d = distance.apply(device1, device2) / (double) Math.max(device1.length(), device2.length());
