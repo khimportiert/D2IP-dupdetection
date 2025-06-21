@@ -3,6 +3,8 @@ package app.model;
 import app.token.Token;
 import app.token.Tokenizer;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.TreeSet;
 
 /**
@@ -16,7 +18,10 @@ import java.util.TreeSet;
  * </ul>
  * Additional fields beyond those in the CSV are allowed.
  */
-public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
+public class StorageDevice implements ModelEntity, Comparable<ModelEntity>, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private int id;
     private String name;
     private String price;
@@ -24,6 +29,7 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
     private String description;
     private String category;
     private TreeSet<Token> tokens = new TreeSet<>();
+    private String sanitizedName;
 
     public String getName() {
         return name;
@@ -43,6 +49,18 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity> {
 
     public String getCategory() {
         return category;
+    }
+
+    public String getSanitizedName() {
+        return sanitizedName;
+    }
+
+    public void setSanitizedName(String newName) {
+        sanitizedName = newName;
+    }
+
+    public void setTokens(TreeSet<Token> newTokens) {
+        tokens = newTokens;
     }
 
     public TreeSet<Token> getTokens() {

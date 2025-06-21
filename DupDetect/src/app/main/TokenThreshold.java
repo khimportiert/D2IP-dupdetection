@@ -3,7 +3,9 @@ package app.main;
 import app.io.CSVReader;
 import app.misc.StopWatch;
 import app.model.Dup;
+import app.model.ModelEntity;
 import app.model.Notebook;
+import app.model.StorageDevice;
 import app.token.Token;
 import app.token.Tokenizer;
 
@@ -13,15 +15,16 @@ import java.util.*;
 public class TokenThreshold {
     public static void main(String[] args) {
         String currentDir = System.getProperty("user.dir");
-        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z1.csv").getAbsolutePath());
-        CSVReader dr = new CSVReader(new File(currentDir + "/data/ZY1.csv").getAbsolutePath());
+        Class<? extends ModelEntity> TARGET_CLASS = StorageDevice.class;
+        CSVReader fr = new CSVReader(new File(currentDir + "/data/Z2.csv").getAbsolutePath());
+        CSVReader dr = new CSVReader(new File(currentDir + "/data/ZY2.csv").getAbsolutePath());
 
         StopWatch.start();
 
-        ArrayList<Notebook> notebooks = fr.read(Notebook.class);
+        ArrayList<? extends ModelEntity> notebooks = fr.read(TARGET_CLASS);
         ArrayList<Dup> dupes = dr.read(Dup.class);
 
-        ArrayList<Notebook> bks = new ArrayList<>();
+        ArrayList<ModelEntity> bks = new ArrayList<>();
 
         for(Dup dup : dupes) {
             bks.add(notebooks.get(dup.getLid()));
@@ -34,13 +37,11 @@ public class TokenThreshold {
             scores.put(type, new ArrayList<>());
         }
 
-        ArrayList<Notebook> notes = bks;
+        bks.forEach(ModelEntity::tokenize);
 
-        notes.forEach(Notebook::tokenize);
-
-        for (int i = 1; i < notes.size(); i += 2) {
-            HashMap<Token.Type, HashSet<Token>> tokenMap1 = Tokenizer.getGroupedTokens(notes.get(i-1));
-            HashMap<Token.Type, HashSet<Token>> tokenMap2 = Tokenizer.getGroupedTokens(notes.get(i));
+        for (int i = 1; i < bks.size(); i += 2) {
+            HashMap<Token.Type, HashSet<Token>> tokenMap1 = Tokenizer.getGroupedTokens(bks.get(i-1));
+            HashMap<Token.Type, HashSet<Token>> tokenMap2 = Tokenizer.getGroupedTokens(bks.get(i));
 
             tokenMap1.forEach((key1, set1) -> {
                 HashSet<Token> set2 = tokenMap2.get(key1);
@@ -85,12 +86,12 @@ public class TokenThreshold {
             System.out.printf("%s:\t avg=%.3f med=%.3f l33=%.3f\n", type, average, median, lowerThird);
         }
 
-        long a = scores.get(Token.Type.KEYWORD).stream().filter(s -> s >= 1.0).count();
-        long b = scores.get(Token.Type.OTHER).stream().filter(s -> s >= 1.0).count();
-
-        System.out.println(scores.get(Token.Type.OTHER).size());
-        System.out.println(a);
-        System.out.println(b);
+//        long a = scores.get(Token.Type.KEYWORD).stream().filter(s -> s >= 1.0).count();
+//        long b = scores.get(Token.Type.OTHER).stream().filter(s -> s >= 1.0).count();
+//
+//        System.out.println(scores.get(Token.Type.OTHER).size());
+//        System.out.println(a);
+//        System.out.println(b);
 
         StopWatch.stop();
     }

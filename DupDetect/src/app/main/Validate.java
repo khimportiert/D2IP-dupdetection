@@ -15,6 +15,8 @@ public class Validate {
         CSVReader dr = new CSVReader(currentDir + "/data/out2.csv");
         ArrayList<Dup> trueDups =  fr.read(Dup.class);
         ArrayList<Dup> myDups =  dr.read(Dup.class);
+        System.out.println(myDups.size());
+        System.out.println(new TreeSet<>(myDups).size());
         double f1 = FilterTesting.evaluateF1(new TreeSet<>(trueDups), new TreeSet<>(myDups));
         System.out.println(f1 + " score");
     }

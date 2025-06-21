@@ -85,6 +85,10 @@ public class Tokenizer {
     }
 
     public static void writeFileTest(List<ModelEntity> items) {
+        writeFileTest(items, filename);
+    }
+
+    public static void writeFileTest(List<ModelEntity> items, String filename) {
 
         try (FileWriter writer = new FileWriter(filename)) {
 

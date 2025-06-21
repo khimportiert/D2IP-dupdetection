@@ -71,7 +71,7 @@ public class FilterTesting {
                 counts[2]++;
             }
 
-            if (i % 10000 == 0) {
+            if (i % 50000 == 0) {
                 System.out.println(i + " / " + allDupes.size());
             }
             i++;

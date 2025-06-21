@@ -130,5 +130,10 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="mongodb.driver.sync" level="project" />
+    <orderEntry type="library" name="mysql.connector.java" level="project" />
+    <orderEntry type="library" name="jfree.jfreechart" level="project" />
+    <orderEntry type="library" name="esotericsoftware.kryo" level="project" />
+    <orderEntry type="library" name="apache.commons.text" level="project" />
   </component>
 </module>
