@@ -120,12 +120,10 @@ public class BuildPartition {
         ArrayList<StorageDevice>[][]
                 partitions = load(CURRENT_DIR+"/data/partitions.kyro", ArrayList[][].class);
 
-        ExecutorService executor = Executors.newFixedThreadPool(THREADS);
-        List<Future<List<Dup>>> futures = new ArrayList<>();
 
         ArrayList<Dup> duplicates = new ArrayList<>();
 
-        for (int i = 0; i < brands.size(); i++) {
+        for (int i = 7; i < brands.size(); i++) {
             for (int j = 0; j < sizes.size(); j++) {
                 HashMap<String, Integer> WORD_COUNT = new HashMap<>();
 
@@ -178,42 +176,34 @@ public class BuildPartition {
                 System.out.println(brands.get(i) + " - " + sizes.get(j) + ": ");
 
                 for (int n = 0; n < partitions[i][j].size(); n++) {
-                    int finalN = n;
-                    int finalI = i;
-                    int finalJ = j;
-                    Callable<List<Dup>> task = () -> {
-                        List<Dup> localDups = new ArrayList<>();
-                        for (int m = finalN + 1; m < partitions[finalI][finalJ].size(); m++) {
+                    for (int m = n + 1; m < partitions[i][j].size(); m++) {
 
-                            int current = progress.incrementAndGet();
-                            if (current % 20_000 == 0) {
-                                double percent = (current * 100.0) / totalSteps;
-                                long barFilled = ((long) current * barWidth) / totalSteps;
+                        int current = progress.incrementAndGet();
+                        if (current % 20_000 == 0) {
+                            double percent = (current * 100.0) / totalSteps;
+                            long barFilled = ((long) current * barWidth) / totalSteps;
 
-                                String bar = "=".repeat((int) barFilled) + " ".repeat((int) (barWidth - barFilled));
-                                System.out.printf("\r[%s] %5.2f%%", bar, percent);
-                                System.out.flush();
-                            }
+                            String bar = "=".repeat((int) barFilled) + " ".repeat((int) (barWidth - barFilled));
+                            System.out.printf("\r[%s] %5.2f%%", bar, percent);
+                            System.out.flush();
+                        }
 
 
-                            String device1 = partitions[finalI][finalJ].get(finalN).getTokens().toString();
-                            String device2 = partitions[finalI][finalJ].get(m).getTokens().toString();
+                        String device1 = partitions[i][j].get(n).getTokens().toString();
+                        String device2 = partitions[i][j].get(m).getTokens().toString();
 
 //                            System.out.println(device1);
 //                            System.out.println(device2);
 
 //                            double d = distance.apply(device1, device2); // Jaro-Winkler
-                            double d = distance.apply(device1, device2) / (double) Math.max(device1.length(), device2.length());
+                        double d = distance.apply(device1, device2) / (double) Math.max(device1.length(), device2.length());
 
-                            if (d < 0.2) {
-                                Dup dup = new Dup(partitions[finalI][finalJ].get(finalN).getId(), partitions[finalI][finalJ].get(m).getId());
-                                localDups.add(dup);
-                            }
+                        if (d < 0.2) {
+                            Dup dup = new Dup(partitions[i][j].get(n).getId(), partitions[i][j].get(m).getId());
+                            duplicates.add(dup);
                         }
-                        return localDups;
-                    };
+                    }
 
-                    futures.add(executor.submit(task));
 
                 }
 
@@ -225,13 +215,6 @@ public class BuildPartition {
 
 //                System.out.println(WORD_COUNT);
 
-                for (Future<List<Dup>> future : futures) {
-                    try {
-                        duplicates.addAll(future.get());
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
-                }
 
                 System.out.println();
                 System.out.println("DupCount: " + duplicates.size());
@@ -240,9 +223,6 @@ public class BuildPartition {
 
             StopWatch.peek();
         }
-
-        executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.HOURS);
 
         CSVGenerator wr = new CSVGenerator(CURRENT_DIR+"/data/partitions_dup.csv");
         wr.generate(new ArrayList<>(duplicates));
