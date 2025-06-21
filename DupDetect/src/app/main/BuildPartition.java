@@ -34,7 +34,7 @@ public class BuildPartition {
                 LOOKUP_TABLE[i] = (byte) (i + 0x20);
             } else if (i >= '0' && i <= '9') {
                 LOOKUP_TABLE[i] = (byte) (i);
-            } else if (i == '.') {
+            } else if (i == '.' || i == '-' || i == '/') {
                 LOOKUP_TABLE[i] = (byte) (i);
             } else {
                 LOOKUP_TABLE[i] = ' ';
@@ -138,15 +138,22 @@ public class BuildPartition {
                     ));
                     // +++++ Sorting by Word Count ASC +++++
 
+                    // +++++ Remove Partitioning Keys
+                    Matcher m1 = Pattern.compile(device.getBrand().toLowerCase()).matcher(device.getSanitizedName());
+                    device.setSanitizedName(m1.replaceAll("").trim());
+                    Matcher m2 = Pattern.compile("(?i)(\\d+\\s?(GB|TB))").matcher(device.getSanitizedName());
+                    device.setSanitizedName(m2.replaceAll("").trim());
+
+                    // +++++ Set Tokens
                     boolean isPrinted = false;
                     for (String word : device.getSanitizedName().split(" ")) {
                         if (word.isEmpty())
                             continue;
 
-                        if (word.length() < 2 && !isPrinted) {
-                            System.out.println(device.getSanitizedName());
-                            isPrinted = true;
-                        }
+//                        if (word.length() < 2 && !isPrinted) {
+//                            System.out.println(device.getSanitizedName());
+//                            isPrinted = true;
+//                        }
 
                         Token token = new Token(word, Token.Type.WORD);
                         device.getTokens().add(token);
