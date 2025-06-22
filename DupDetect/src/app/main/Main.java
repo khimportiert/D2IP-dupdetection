@@ -1,5 +1,14 @@
 package app.main;
 
+import app.io.CSVReader;
+import app.io.SampleDupPrint;
+import app.io.SampleGenerator;
+import app.model.Dup;
+import app.model.StorageDevice;
+
+import java.io.File;
+import java.util.ArrayList;
+
 public class Main {
     static final String CURRENT_DIR = System.getProperty("user.dir");
     static final String FILE_1 = CURRENT_DIR + "/data/Z2.csv";
@@ -11,11 +20,27 @@ public class Main {
         System.out.println("Hello and welcome!");
 
 
+        CSVReader fr = new CSVReader(new File(OUT_1).getAbsolutePath());
+        CSVReader dr = new CSVReader(CURRENT_DIR + "/data/partitions_dup.csv");
 
+        ArrayList<StorageDevice> storageDevices = fr.read(StorageDevice.class);
+        ArrayList<Dup> duplicates = dr.read(Dup.class);
+
+//        for (Dup dup : duplicates) {
+//            int lid = dup.getLid();
+//            int rid = dup.getRid();
+//
+//            System.out.println(storageDevices.get(lid).getId() + "," + storageDevices.get(rid).getId());
+//            System.out.println(storageDevices.get(lid).getName());
+//            System.out.println(storageDevices.get(rid).getName());
+//            System.out.println();
+//        }
+
+        SampleDupPrint.showSamples(50, 0, FILE_1, FILE_2, StorageDevice.class);
 
 
 //        SampleGenerator gen = new SampleGenerator(FILE_1, FILE_2, OUT_1, OUT_2);
-//        gen.generate(20_000, StorageDevice.class);
+//        gen.generate(100_000, StorageDevice.class);
 //
 //        CSVReader or1 = new CSVReader(new File(OUT_1).getAbsolutePath());
 //        CSVReader or2 = new CSVReader(new File(OUT_2).getAbsolutePath());

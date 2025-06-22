@@ -6,6 +6,7 @@ import app.misc.StopWatch;
 import app.model.Dup;
 import app.model.StorageDevice;
 import app.token.Token;
+import app.token.Tokenizer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 public class BuildPartition {
     static final int THREADS = 16;
     static final String CURRENT_DIR = System.getProperty("user.dir");
-    static final String FILE_1 = CURRENT_DIR + "/data/Z2.csv";
+    static final String FILE_1 = CURRENT_DIR + "/dataSample/Z2.csv";
 
     private static final byte[] LOOKUP_TABLE = new byte[256];
 
@@ -89,8 +90,17 @@ public class BuildPartition {
             String brand = sd.getBrand().toLowerCase();
             String name = sd.getName();
 
-            int i = brands.indexOf(brand);
-            if (i == -1) i = brands.size();
+            Matcher matcher = Pattern.compile(String.join("|", brands), Pattern.CASE_INSENSITIVE).matcher(name);
+            if (matcher.find()) {
+                brand = matcher.group();
+            }
+
+            int i = brands.indexOf(brand.toLowerCase());
+            if (i == -1) {
+                i = brands.size();
+            } else {
+                sd.setBrand(brand); // TODO Hier wird das Dataset geändert!
+            }
 
             Matcher m = Pattern.compile("(?i)(\\d+\\s?(GB|TB))").matcher(name);
             int j = sizes.size();
@@ -113,27 +123,30 @@ public class BuildPartition {
         ArrayList<String> brands = new ArrayList<>(List.of(new String[]{"sandisk", "sony", "kingston", "lexar", "intenso", "toshiba", "samsung", "pny", "transcend"}));
         ArrayList<String> sizes = new ArrayList<>(List.of(new String[]{"4GB", "8GB", "10GB", "16GB", "32GB", "64GB", "128GB", "256GB", "512GB"}));
 
-//        partitioning(brands, sizes);
+        partitioning(brands, sizes);
 
         StopWatch.start();
         @SuppressWarnings("unchecked")
         ArrayList<StorageDevice>[][]
                 partitions = load(CURRENT_DIR+"/data/partitions.kyro", ArrayList[][].class);
 
-
+        ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         ArrayList<Dup> duplicates = new ArrayList<>();
 
-        for (int i = 7; i < brands.size(); i++) {
+        for (int i = 0; i < brands.size(); i++) {
             for (int j = 0; j < sizes.size(); j++) {
+
+                List<Future<List<Dup>>> futures = new ArrayList<>();
+
                 HashMap<String, Integer> WORD_COUNT = new HashMap<>();
 
                 partitions[i][j].forEach(device -> {
                     device.setSanitizedName(sanitize(device.getName()));
 
                     // +++++ Sorting by Word Count ASC +++++
-                    device.setTokens(new TreeSet<>(
-                            Comparator.comparingInt(o -> WORD_COUNT.getOrDefault(o.getValue(), 0))
-                    ));
+//                    device.setTokens(new TreeSet<>(
+//                            Comparator.comparingInt(o -> WORD_COUNT.getOrDefault(o.getValue(), 0))
+//                    ));
                     // +++++ Sorting by Word Count ASC +++++
 
                     // +++++ Remove Partitioning Keys
@@ -143,18 +156,14 @@ public class BuildPartition {
                     device.setSanitizedName(m2.replaceAll("").trim());
 
                     // +++++ Set Tokens
-                    boolean isPrinted = false;
                     for (String word : device.getSanitizedName().split(" ")) {
                         if (word.isEmpty())
                             continue;
-
-//                        if (word.length() < 2 && !isPrinted) {
-//                            System.out.println(device.getSanitizedName());
-//                            isPrinted = true;
-//                        }
+                        if (word.length() < 3)
+                            continue;
 
                         Token token = new Token(word, Token.Type.WORD);
-                        device.getTokens().add(token);
+                        device.getTokensArrayList().add(token);
                     }
 
                     // +++++ TF-IDF +++++
@@ -165,56 +174,76 @@ public class BuildPartition {
                     // +++++ TF-IDF +++++
                 });
 
-                // +++++ Jaro-Winkler-Distance +++++
-//                JaroWinklerDistance distance = new JaroWinklerDistance();
-                LevenshteinDistance  distance = new LevenshteinDistance ();
+                partitions[i][j].forEach(device -> {
+                    device.getTokensArrayList().sort(
+                            Comparator.comparingInt(o -> WORD_COUNT.getOrDefault(o.getValue(), 0))
+                    );
+                });
 
+                JaroWinklerDistance distance = new JaroWinklerDistance();
+                final List<StorageDevice> part = partitions[i][j];
+                final int n = part.size();
                 AtomicInteger progress = new AtomicInteger(0);
                 int barWidth = 50;
-                long totalSteps = (long) partitions[i][j].size() * partitions[i][j].size() / 2;
+                long totalSteps = (long)n * (n - 1) / 2;
 
                 System.out.println(brands.get(i) + " - " + sizes.get(j) + ": ");
 
-                for (int n = 0; n < partitions[i][j].size(); n++) {
-                    for (int m = n + 1; m < partitions[i][j].size(); m++) {
+                for (int tid = 0; tid < THREADS; tid++) {
+                    final int threadId = tid;
+                    futures.add(executor.submit(() -> {
+                        List<Dup> localDups = new ArrayList<>();
+                        for (int a = threadId; a < n; a += THREADS) {
 
-                        int current = progress.incrementAndGet();
-                        if (current % 20_000 == 0) {
-                            double percent = (current * 100.0) / totalSteps;
-                            long barFilled = ((long) current * barWidth) / totalSteps;
+                            String device1 = part.get(a).getTokensArrayList().toString();
 
-                            String bar = "=".repeat((int) barFilled) + " ".repeat((int) (barWidth - barFilled));
-                            System.out.printf("\r[%s] %5.2f%%", bar, percent);
-                            System.out.flush();
+                            for (int b = a + 1; b < n; b++) {
+                                int current = progress.incrementAndGet();
+                                if (current % 20_000 == 0) {
+                                    double percent = (current * 100.0) / totalSteps;
+                                    long barFilled = ((long) current * barWidth) / totalSteps;
+                                    String bar = "=".repeat((int) barFilled) + " ".repeat((int) (barWidth - barFilled));
+                                    System.out.printf("\r[%s] %5.2f%%", bar, percent);
+                                    System.out.flush();
+                                }
+
+                                String device2 = part.get(b).getTokensArrayList().toString();
+
+                                HashSet<Token> set1 = new HashSet<>(part.get(a).getTokensArrayList());
+                                HashSet<Token> set2 = new HashSet<>(part.get(b).getTokensArrayList());
+                                HashSet<Token> combinedTokens =  new HashSet<>();
+                                combinedTokens.addAll(set1);
+                                combinedTokens.addAll(set2);
+                                int dupCount = set1.size() + set2.size() - combinedTokens.size();
+                                double score = set1.size() + set2.size() - dupCount != 0 ? (double) dupCount / (set1.size() + set2.size() - dupCount) : 0;
+
+                                if (score > 0.6) { // TODO lange Wörter haben mehr gewicht
+                                    localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
+                                }
+
+//                                if (device1.equals(device2)) {
+//                                    Dup dup = new Dup(part.get(a).getId(), part.get(b).getId());
+//                                    localDups.add(dup);
+//                                }
+
+//                                double d = distance.apply(device1, device2); // Jaro-Winkler
+//                                if (d < 0.12) {
+//                                    localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
+//                                }
+                            }
                         }
-
-
-                        String device1 = partitions[i][j].get(n).getTokens().toString();
-                        String device2 = partitions[i][j].get(m).getTokens().toString();
-
-//                            System.out.println(device1);
-//                            System.out.println(device2);
-
-//                            double d = distance.apply(device1, device2); // Jaro-Winkler
-                        double d = distance.apply(device1, device2) / (double) Math.max(device1.length(), device2.length());
-
-                        if (d < 0.2) {
-                            Dup dup = new Dup(partitions[i][j].get(n).getId(), partitions[i][j].get(m).getId());
-                            duplicates.add(dup);
-                        }
-                    }
-
+                        return localDups;
+                    }));
 
                 }
 
-//                ArrayList<ModelEntity> l = new ArrayList<>(partitions[i][j]);
-//                l.forEach(ModelEntity::tokenize);
-//                File folder = new File(CURRENT_DIR + "/data/tokens/" + brands.get(i));
-//                folder.mkdirs();
-//                Tokenizer.writeFileTest(l,  folder.getAbsolutePath() + "/" + sizes.get(j) + ".txt");
-
-//                System.out.println(WORD_COUNT);
-
+                for (Future<List<Dup>> future : futures) {
+                    try {
+                        duplicates.addAll(future.get());
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 System.out.println();
                 System.out.println("DupCount: " + duplicates.size());
@@ -224,7 +253,10 @@ public class BuildPartition {
             StopWatch.peek();
         }
 
-        CSVGenerator wr = new CSVGenerator(CURRENT_DIR+"/data/partitions_dup.csv");
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.HOURS);
+
+        CSVGenerator wr = new CSVGenerator(CURRENT_DIR+"/data/partitions_dup_multi.csv");
         wr.generate(new ArrayList<>(duplicates));
 
     }
