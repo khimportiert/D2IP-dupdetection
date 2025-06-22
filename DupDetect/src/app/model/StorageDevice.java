@@ -5,6 +5,7 @@ import app.token.Tokenizer;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.TreeSet;
 
 /**
@@ -29,6 +30,7 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity>, Seri
     private String description;
     private String category;
     private TreeSet<Token> tokens = new TreeSet<>();
+    private ArrayList<Token> tokensArrayList = new ArrayList<>();
     private String sanitizedName;
 
     public String getName() {
@@ -63,8 +65,16 @@ public class StorageDevice implements ModelEntity, Comparable<ModelEntity>, Seri
         tokens = newTokens;
     }
 
+    public void setBrand(String newBrand) {
+        brand = newBrand;
+    }
+
     public TreeSet<Token> getTokens() {
         return tokens;
+    }
+
+    public ArrayList<Token> getTokensArrayList() {
+        return tokensArrayList;
     }
 
     public void tokenize() {
