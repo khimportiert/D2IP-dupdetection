@@ -36,7 +36,7 @@ public class Main {
 //            System.out.println();
 //        }
 
-        SampleDupPrint.showSamples(50, 0, FILE_1, FILE_2, StorageDevice.class);
+        SampleDupPrint.showSamples(50, 5000, FILE_1, FILE_2, StorageDevice.class);
 
 
 //        SampleGenerator gen = new SampleGenerator(FILE_1, FILE_2, OUT_1, OUT_2);

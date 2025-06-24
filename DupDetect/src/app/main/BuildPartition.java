@@ -14,6 +14,7 @@ import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,9 +36,11 @@ public class BuildPartition {
                 LOOKUP_TABLE[i] = (byte) (i + 0x20);
             } else if (i >= '0' && i <= '9') {
                 LOOKUP_TABLE[i] = (byte) (i);
-            } else if (i == '.' || i == '-' || i == '/') {
+            }
+            else if (i == '.' || i == '-' || i == '/') {
                 LOOKUP_TABLE[i] = (byte) (i);
-            } else {
+            }
+            else {
                 LOOKUP_TABLE[i] = ' ';
             }
         }
@@ -159,16 +162,18 @@ public class BuildPartition {
                     for (String word : device.getSanitizedName().split(" ")) {
                         if (word.isEmpty())
                             continue;
-                        if (word.length() < 3)
+                        if (word.length() < 2)
                             continue;
 
                         Token token = new Token(word, Token.Type.WORD);
-                        device.getTokensArrayList().add(token);
+                        if (!device.getTokensArrayList().contains(token)) {
+                            device.getTokensArrayList().add(token);
+                        }
                     }
 
                     // +++++ TF-IDF +++++
-                    device.getTokens().forEach(token -> {
-                        int count = WORD_COUNT.getOrDefault(token.getValue(), 1);
+                    device.getTokensArrayList().forEach(token -> {
+                        int count = WORD_COUNT.getOrDefault(token.getValue(), 0);
                         WORD_COUNT.put(token.getValue(), count + 1);
                     });
                     // +++++ TF-IDF +++++
@@ -181,6 +186,7 @@ public class BuildPartition {
                 });
 
                 JaroWinklerDistance distance = new JaroWinklerDistance();
+                LevenshteinDistance levenstein = new LevenshteinDistance();
                 final List<StorageDevice> part = partitions[i][j];
                 final int n = part.size();
                 AtomicInteger progress = new AtomicInteger(0);
@@ -195,7 +201,10 @@ public class BuildPartition {
                         List<Dup> localDups = new ArrayList<>();
                         for (int a = threadId; a < n; a += THREADS) {
 
-                            String device1 = part.get(a).getTokensArrayList().toString();
+                            String device1 = "";
+                            for (Token t : part.get(a).getTokensArrayList()) {
+                                device1 += t.getValue() + " ";
+                            }
 
                             for (int b = a + 1; b < n; b++) {
                                 int current = progress.incrementAndGet();
@@ -203,22 +212,86 @@ public class BuildPartition {
                                     double percent = (current * 100.0) / totalSteps;
                                     long barFilled = ((long) current * barWidth) / totalSteps;
                                     String bar = "=".repeat((int) barFilled) + " ".repeat((int) (barWidth - barFilled));
-                                    System.out.printf("\r[%s] %5.2f%%", bar, percent);
-                                    System.out.flush();
+//                                    System.out.printf("\r[%s] %5.2f%%", bar, percent);
+//                                    System.out.flush();
                                 }
 
-                                String device2 = part.get(b).getTokensArrayList().toString();
+                                String device2 = "";
+                                for (Token t : part.get(b).getTokensArrayList()) {
+                                    device2 += t.getValue() + " ";
+                                }
 
                                 HashSet<Token> set1 = new HashSet<>(part.get(a).getTokensArrayList());
                                 HashSet<Token> set2 = new HashSet<>(part.get(b).getTokensArrayList());
+
+//                                ArrayList<Byte> bytes1 = new ArrayList<>();
+//                                for (Token t : set1) {
+//                                    for (byte c : t.getValue().getBytes()) {
+//                                        bytes1.add(c);
+//                                    }
+//                                }
+//                                bytes1.sort(Comparator.comparing(Byte::byteValue));
+//                                byte[] byteArr1 = new byte[bytes1.size()];
+//                                for (int ii = 0; ii < bytes1.size(); ii++) {
+//                                    byteArr1[ii] = bytes1.get(ii);
+//                                }
+//                                String device1SortedAlpha = new String(byteArr1);
+//
+//                                ArrayList<Byte> bytes2 = new ArrayList<>();
+//                                for (Token t : set2) {
+//                                    for (byte c : t.getValue().getBytes()) {
+//                                        bytes2.add(c);
+//                                    }
+//                                }
+//                                bytes2.sort(Comparator.comparing(Byte::byteValue));
+//                                byte[] byteArr2 = new byte[bytes2.size()];
+//                                for (int ii = 0; ii < bytes2.size(); ii++) {
+//                                    byteArr2[ii] = bytes2.get(ii);
+//                                }
+//                                String device2SortedAlpha = new String(byteArr2);
+//
+//                                if (levenstein.apply(device1SortedAlpha, device2SortedAlpha) <= 2) {
+//                                    localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
+//                                }
+
+
+                                HashSet<Token> intersectionTokens = new HashSet<>(set1);
                                 HashSet<Token> combinedTokens =  new HashSet<>();
                                 combinedTokens.addAll(set1);
                                 combinedTokens.addAll(set2);
+                                intersectionTokens.retainAll(set2);
                                 int dupCount = set1.size() + set2.size() - combinedTokens.size();
                                 double score = set1.size() + set2.size() - dupCount != 0 ? (double) dupCount / (set1.size() + set2.size() - dupCount) : 0;
 
-                                if (score > 0.6) { // TODO lange Wörter haben mehr gewicht
+                                double weighted_score = 0;
+                                for (Token t : intersectionTokens) {
+                                    int count = WORD_COUNT.get(t.getValue());
+                                    weighted_score += 1 / Math.log(count);
+                                }
+                                weighted_score /= intersectionTokens.size();
+
+                                if (weighted_score > 0.25) {
                                     localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
+                                }
+
+                                if (score >= 0.75) { // TODO lange Wörter haben mehr gewicht
+//                                    localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
+
+//                                    StringBuilder sb1 = new StringBuilder();
+//                                    part.get(a).getTokensArrayList().forEach(t -> {
+//                                        sb1.append(t.getValue() + " (" + WORD_COUNT.get(t.getValue()) + ")");
+//                                        sb1.append(", ");
+//                                    });
+//                                    sb1.append("\n");
+//                                    System.out.println(sb1);
+//                                    StringBuilder sb2 = new StringBuilder();
+//                                    part.get(b).getTokensArrayList().forEach(t -> {
+//                                        sb2.append(t.getValue() + " (" + WORD_COUNT.get(t.getValue()) + ")");
+//                                        sb2.append(", ");
+//                                    });
+//                                    sb2.append("\n");
+//                                    System.out.println(sb2);
+//                                    System.out.println();
                                 }
 
 //                                if (device1.equals(device2)) {
@@ -227,7 +300,7 @@ public class BuildPartition {
 //                                }
 
 //                                double d = distance.apply(device1, device2); // Jaro-Winkler
-//                                if (d < 0.12) {
+//                                if (d < 0.13) {
 //                                    localDups.add(new Dup(part.get(a).getId(), part.get(b).getId()));
 //                                }
                             }
